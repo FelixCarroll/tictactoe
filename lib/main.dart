@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
       theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: new TicTacToe(),
+      home: new TicTacToe(size: 6,),
     );
   }
 }
@@ -43,9 +43,10 @@ enum TicTacToeSymbol {
 class TicTacToeEngine {
   TicTacToeState state;
   List<TicTacToeSymbol> grid;
+  int size;
 
-  TicTacToeEngine({this.state : TicTacToeState.player1}){
-      grid = List<TicTacToeSymbol>.generate(9, (int index) {
+  TicTacToeEngine({this.state : TicTacToeState.player1, this.size : 3}){
+      grid = List<TicTacToeSymbol>.generate(size * size, (int index) {
         return TicTacToeSymbol.empty;
     });
   }
@@ -100,9 +101,13 @@ class TicTacToe extends StatefulWidget {
 
   Player player1 = new Player(name: "Player 1", symbol: "X", color: Colors.blue);
   Player player2 = new Player(name: "Player 2", symbol: "O", color: Colors.red);
-  TicTacToeEngine game = new TicTacToeEngine();
+  TicTacToeEngine game;
 
-  TicTacToe();
+
+  int size;
+  TicTacToe({this.size : 3}){
+    game = new TicTacToeEngine(size: size);
+  }
 
   @override
   _TicTacToeState createState() => _TicTacToeState();
@@ -133,6 +138,15 @@ class _TicTacToeState extends State<TicTacToe> {
     }
   }
 
+  MaterialColor convertStateToColor(TicTacToeState player){
+    if(player == TicTacToeState.player1) {
+      return widget.player1.color;
+    } else if(player == TicTacToeState.player2) {
+      return widget.player2.color;
+    } else {
+      return Colors.grey;
+    }
+  }
 
   void _handleGridButtonTap (int index) {
     // Handles event that occur when a button is pushed
@@ -145,7 +159,7 @@ class _TicTacToeState extends State<TicTacToe> {
     // Resets the game engine to a new instance and calls setState to
     // redraw the grid
     setState(() {
-      widget.game = new TicTacToeEngine();
+      widget.game = new TicTacToeEngine(size:widget.size);
     });
   }
 
@@ -154,11 +168,11 @@ class _TicTacToeState extends State<TicTacToe> {
 
     // 3 x 3 Grid Physical representation
     Widget grid =  GridView.count(
-      crossAxisCount: 3,
+      crossAxisCount: widget.size,
       padding: const EdgeInsets.all(4.0),
       mainAxisSpacing: 4.0,
       crossAxisSpacing: 4.0,
-      children: new List<Widget>.generate(9, (int index) {
+      children: new List<Widget>.generate(widget.size * widget.size, (int index) {
         return new TicTacToeBox(
           id: index,
           onTap: _handleGridButtonTap,
@@ -177,6 +191,7 @@ class _TicTacToeState extends State<TicTacToe> {
     return new Scaffold(
       appBar: AppBar(
         title: Text("TicTacToe"),
+        backgroundColor: convertStateToColor(widget.game.state),
         actions: <Widget>[
           reset,
         ],
